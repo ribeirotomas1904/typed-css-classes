@@ -1,0 +1,12 @@
+(library
+ (name ppx)
+ (public_name typed-css-classes.lib)
+ (kind ppx_rewriter)
+ (libraries ppxlib str)
+ (preprocess
+  (pps ppxlib.metaquot)))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

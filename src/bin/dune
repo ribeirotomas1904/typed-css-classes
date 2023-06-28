@@ -1,0 +1,4 @@
+(executable
+ (name main)
+ (public_name typed-css-classes)
+ (libraries typed-css-classes.lib))

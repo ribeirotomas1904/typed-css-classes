@@ -1,0 +1,14 @@
+{
+  "esy": {
+    "build": "dune build -p typed-css-classes"
+  },
+  "dependencies": {
+    "ocaml": "4.14.1000",
+    "@opam/dune": "3.8.2",
+    "@opam/ppxlib": "0.29.1"
+  },
+  "devDependencies": {
+    "@opam/ocaml-lsp-server": "1.16.2",
+    "@opam/ocamlformat": "0.25.1"
+  }
+}
