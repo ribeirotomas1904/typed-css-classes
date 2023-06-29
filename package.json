@@ -1,0 +1,14 @@
+{
+  "name": "parser",
+  "version": "1.0.0",
+  "dependencies": {
+    "postcss": "^8.4.24",
+    "postcss-modules": "^6.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.18.10"
+  },
+  "scripts": {
+    "build": "esbuild src/lib/parser.js --outfile=src/lib/parser.bundle.js --bundle --platform=node"
+  }
+}

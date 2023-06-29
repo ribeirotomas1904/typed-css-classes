@@ -24,6 +24,7 @@ const packageJson = {
 const distPath = path.join(__dirname, "dist");
 const licensePath = path.join(__dirname, "LICENSE");
 const binPath = path.join(__dirname, "_esy/default/build/default/src/bin/main.exe");
+const parserPath = path.join(__dirname, "src/lib/parser.bundle.js");
 
 fs.rmSync(distPath, { recursive: true, force: true });
 fs.rmSync(path.join(__dirname, "_esy"), { recursive: true, force: true });
@@ -38,12 +39,22 @@ exec("esy", (error) => {
     return;
   }
 
-  const packageJsonDestPath = path.join(distPath, "package.json");
-  fs.writeFileSync(packageJsonDestPath, JSON.stringify(packageJson, null, 2));
+  exec("npm i && npm run build", (error) => {
+    if (error) {
+      console.error(`Error running "npm": ${error}`);
+      return;
+    }
 
-  const licenseDestPath = path.join(distPath, path.basename(licensePath));
-  fs.copyFileSync(licensePath, licenseDestPath);
+    const packageJsonDestPath = path.join(distPath, "package.json");
+    fs.writeFileSync(packageJsonDestPath, JSON.stringify(packageJson, null, 2));
 
-  const binDestPath = path.join(distPath, "ppx");
-  fs.copyFileSync(binPath, binDestPath);
+    const licenseDestPath = path.join(distPath, path.basename(licensePath));
+    fs.copyFileSync(licensePath, licenseDestPath);
+
+    const parserDestPath = path.join(distPath, path.basename(parserPath));
+    fs.renameSync(parserPath, parserDestPath);
+
+    const binDestPath = path.join(distPath, "ppx");
+    fs.copyFileSync(binPath, binDestPath);
+  });
 });

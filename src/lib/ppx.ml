@@ -1,21 +1,25 @@
-let read_file filepath = In_channel.with_open_text filepath In_channel.input_all
+let read_file filepath = In_channel.with_open_bin filepath In_channel.input_all
 
-(* TODO: improve regex *)
-let extract_css_class_names css_string =
-  let class_name_regex = Str.regexp {|\.\([a-zA-Z]+\)|} in
-
-  let rec extract_classes acc pos =
-    if pos >= String.length css_string then acc
-    else
-      try
-        let _ = Str.search_forward class_name_regex css_string pos in
-        let class_name = Str.matched_group 1 css_string in
-        let new_pos = Str.match_end () in
-        extract_classes (class_name :: acc) new_pos
-      with Not_found -> acc
+let extract_css_class_names css_filepath =
+  let parser_basename = "parser.bundle.js" in
+  let parser_filepath =
+    (* TODO: validate cli args *)
+    parser_basename |> Filename.concat (Filename.dirname Sys.argv.(0))
   in
 
-  List.rev (extract_classes [] 0)
+  (* TODO: validate exit code *)
+  let _ =
+    Filename.quote_command "chmod" [ "+x"; parser_filepath ] |> Sys.command
+  in
+  let temp_file_path = Filename.temp_file "css_class_names" "" in
+
+  (* TODO: validate exit code *)
+  let _ =
+    Filename.quote_command parser_filepath [ css_filepath; temp_file_path ]
+    |> Sys.command
+  in
+
+  read_file temp_file_path |> String.split_on_char ','
 
 open Ppxlib
 
@@ -43,9 +47,7 @@ let expander ~ctxt ident css_filepath =
     | true -> css_filepath |> Filename.concat (Filename.dirname source_filepath)
   in
 
-  let css_class_names =
-    read_file css_absolute_filepath |> extract_css_class_names
-  in
+  let css_class_names = extract_css_class_names css_absolute_filepath in
 
   let open Builder in
   let type_ =
