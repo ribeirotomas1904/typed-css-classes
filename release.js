@@ -6,13 +6,13 @@ const path = require("path");
 
 const packageJson = {
   "name": "typed-css-classes",
-  "description": "",
+  "description": "Type-safe css modules for ReScript",
   "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/ribeirotomas1904/typed-css-classes.git"
   },
-  "keywords": [],
+  "keywords": ["rescript", "ppx", "css modules"],
   "author": "Nathanael Ribeiro <ribeirotomas1904@gmail.com> (https://github.com/ribeirotomas1904)",
   "license": "MIT",
   "bugs": {
