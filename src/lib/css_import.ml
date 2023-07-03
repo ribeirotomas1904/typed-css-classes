@@ -25,48 +25,57 @@ let expander ~ctxt ident css_filepath =
     | true -> css_filepath |> Filename.concat (Filename.dirname source_filepath)
   in
 
-  let css_class_names = extract_css_class_names css_absolute_filepath in
-
   let open Builder in
-  let pstr_extension_ =
-    pstr_extension
-      ( { txt = "raw"; loc },
-        PStr [ pstr_eval (estring ("import \"" ^ css_filepath ^ "\"")) [] ] )
-      []
-  in
+  match Sys.file_exists css_absolute_filepath with
+  | false ->
+      pstr_extension
+        (Location.error_extensionf ~loc "File not found \"%s\"" css_filepath)
+        []
+  | true ->
+      let css_class_names = extract_css_class_names css_absolute_filepath in
 
-  let type_ =
-    let object_fields =
-      css_class_names
-      |> List.map (fun css_class_name ->
-             otag { txt = css_class_name; loc } [%type: string])
-    in
+      let pstr_extension_ =
+        pstr_extension
+          ( { txt = "raw"; loc },
+            PStr [ pstr_eval (estring ("import \"" ^ css_filepath ^ "\"")) [] ]
+          )
+          []
+      in
 
-    ptyp_object object_fields Closed
-  in
+      let type_ =
+        let object_fields =
+          css_class_names
+          |> List.map (fun css_class_name ->
+                 otag { txt = css_class_name; loc } [%type: string])
+        in
 
-  let object_expression =
-    let object_fields =
-      css_class_names
-      |> List.map (fun css_class_name ->
-             let quoted_css_class_name = "\"" ^ css_class_name ^ "\"" in
-             quoted_css_class_name ^ ":" ^ quoted_css_class_name)
-      |> String.concat ","
-      |> fun properties -> "{" ^ properties ^ "}"
-    in
+        ptyp_object object_fields Closed
+      in
 
-    pexp_constraint
-      (pexp_extension
-         ({ txt = "raw"; loc }, PStr [ pstr_eval (estring object_fields) [] ]))
-      type_
-  in
+      let object_expression =
+        let object_fields =
+          css_class_names
+          |> List.map (fun css_class_name ->
+                 let quoted_css_class_name = "\"" ^ css_class_name ^ "\"" in
+                 quoted_css_class_name ^ ":" ^ quoted_css_class_name)
+          |> String.concat ","
+          |> fun properties -> "{" ^ properties ^ "}"
+        in
 
-  let pstr_value_ =
-    pstr_value Nonrecursive
-      [ value_binding ~pat:(pvar ident) ~expr:object_expression ]
-  in
+        pexp_constraint
+          (pexp_extension
+             ( { txt = "raw"; loc },
+               PStr [ pstr_eval (estring object_fields) [] ] ))
+          type_
+      in
 
-  pstr_include (include_infos (pmod_structure [ pstr_extension_; pstr_value_ ]))
+      let pstr_value_ =
+        pstr_value Nonrecursive
+          [ value_binding ~pat:(pvar ident) ~expr:object_expression ]
+      in
+
+      pstr_include
+        (include_infos (pmod_structure [ pstr_extension_; pstr_value_ ]))
 
 let extension = Extension.V3.declare extender_name context extractor expander
 let rule = Context_free.Rule.extension extension

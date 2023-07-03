@@ -25,35 +25,41 @@ let expander ~ctxt ident css_filepath =
     | true -> css_filepath |> Filename.concat (Filename.dirname source_filepath)
   in
 
-  let css_class_names = extract_css_class_names css_absolute_filepath in
-
   let open Builder in
-  let type_ =
-    let object_fields =
-      css_class_names
-      |> List.map (fun css_class_name ->
-             otag { txt = css_class_name; loc } [%type: string])
-    in
+  match Sys.file_exists css_absolute_filepath with
+  | false ->
+      pstr_extension
+        (Location.error_extensionf ~loc "File not found \"%s\"" css_filepath)
+        []
+  | true ->
+      let css_class_names = extract_css_class_names css_absolute_filepath in
 
-    ptyp_object object_fields Closed
-  in
+      let type_ =
+        let object_fields =
+          css_class_names
+          |> List.map (fun css_class_name ->
+                 otag { txt = css_class_name; loc } [%type: string])
+        in
 
-  let attribute_ =
-    attribute ~name:{ txt = "module"; loc }
-      ~payload:(PStr [ pstr_eval (estring css_filepath) [] ])
-  in
+        ptyp_object object_fields Closed
+      in
 
-  let value_description_ =
-    {
-      pval_name = { txt = ident; loc };
-      pval_type = type_;
-      pval_prim = [ "default" ];
-      pval_attributes = [ attribute_ ];
-      pval_loc = loc;
-    }
-  in
+      let attribute_ =
+        attribute ~name:{ txt = "module"; loc }
+          ~payload:(PStr [ pstr_eval (estring css_filepath) [] ])
+      in
 
-  pstr_primitive value_description_
+      let value_description_ =
+        {
+          pval_name = { txt = ident; loc };
+          pval_type = type_;
+          pval_prim = [ "default" ];
+          pval_attributes = [ attribute_ ];
+          pval_loc = loc;
+        }
+      in
+
+      pstr_primitive value_description_
 
 let extension = Extension.V3.declare extender_name context extractor expander
 let rule = Context_free.Rule.extension extension
