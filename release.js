@@ -25,6 +25,7 @@ const distPath = path.join(__dirname, "dist");
 const licensePath = path.join(__dirname, "LICENSE");
 const binPath = path.join(__dirname, "_esy/default/build/default/src/bin/main.exe");
 const parserPath = path.join(__dirname, "src/lib/parser.bundle.js");
+const readmePath = path.join(__dirname, "README.md");
 
 fs.rmSync(distPath, { recursive: true, force: true });
 fs.rmSync(path.join(__dirname, "_esy"), { recursive: true, force: true });
@@ -50,6 +51,9 @@ exec("esy", (error) => {
 
     const licenseDestPath = path.join(distPath, path.basename(licensePath));
     fs.copyFileSync(licensePath, licenseDestPath);
+
+    const readmeDestPath = path.join(distPath, path.basename(readmePath));
+    fs.copyFileSync(readmePath, readmeDestPath);
 
     const parserDestPath = path.join(distPath, path.basename(parserPath));
     fs.renameSync(parserPath, parserDestPath);
